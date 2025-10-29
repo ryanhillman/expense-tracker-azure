@@ -1,0 +1,10 @@
+# Ignore build output
+target/*
+!target/*.jar
+
+# IDE & git junk
+.git
+.gitignore
+.gitattributes
+.idea
+*.iml

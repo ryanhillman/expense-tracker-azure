@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ryan's Expense Tracker</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+        }
+        header { text-align: center; margin: 2rem 0; }
+        header h1 { font-size: 2.5rem; color: #fff; }
+        header p { color: #f0f0f0; font-size: 1.2rem; }
+        .card {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
+            max-width: 700px;
+            width: 90%;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .card h2 { margin-bottom: 1rem; color: #0078d7; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        th { background-color: #0078d7; color: #fff; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        footer { margin-top: 3rem; color: #eee; font-size: 0.9rem; }
+        .loading { color: #0078d7; font-weight: bold; }
+        form { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
+        input {
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            background: #0078d7;
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:hover { background: #005a9e; }
+        .delete-btn { background: #e53935; }
+        .delete-btn:hover { background: #b71c1c; }
+        .edit-btn { background: #f4b400; color: #fff; }
+        .edit-btn:hover { background: #c49000; }
+
+        /* Toast styles */
+        #toastContainer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: bold;
+            animation: fadein 0.5s, fadeout 0.5s 3.5s;
+        }
+        .toast.success { background: #4CAF50; } /* Green */
+        .toast.error { background: #e53935; }   /* Red */
+        @keyframes fadein {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeout {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Ryan's Expense Tracker</h1>
+    <p>Track your expenses easily. Powered by Spring Boot + Azure.</p>
+</header>
+
+<!-- Expense List -->
+<div class="card">
+    <h2>Expense List</h2>
+    <p class="loading">Loading expenses...</p>
+    <table id="expensesTable" style="display:none;">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Amount ($)</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- Add/Edit Expense -->
+<div class="card">
+    <h2 id="formTitle">Add New Expense</h2>
+    <form id="expenseForm">
+        <input type="hidden" id="expenseId" />
+        <input type="text" id="name" placeholder="Expense Name" required />
+        <input type="number" step="0.01" id="amount" placeholder="Amount" required />
+        <button type="submit">Save Expense</button>
+    </form>
+</div>
+
+<footer>
+    © 2025 Ryan Hillman — Built with Spring Boot on Azure
+</footer>
+
+<!-- Toast Container -->
+<div id="toastContainer"></div>
+
+<script>
+    function showToast(message, type = "success") {
+        const container = document.getElementById("toastContainer");
+        const toast = document.createElement("div");
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.remove();
+        }, 4000);
+    }
+
+    async function loadExpenses() {
+        try {
+            const response = await fetch('/expenses');
+            const expenses = await response.json();
+
+            const table = document.getElementById('expensesTable');
+            const tbody = table.querySelector('tbody');
+            const loadingText = document.querySelector('.loading');
+
+            tbody.innerHTML = '';
+            if (expenses.length === 0) {
+                loadingText.textContent = "No expenses found.";
+                table.style.display = 'none';
+                return;
+            }
+
+            loadingText.style.display = 'none';
+            table.style.display = 'table';
+
+            expenses.forEach(expense => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+          <td>${expense.id}</td>
+          <td>${expense.name}</td>
+          <td>${expense.amount.toFixed(2)}</td>
+          <td>
+            <button class="edit-btn" onclick="editExpense(${expense.id}, '${expense.name}', ${expense.amount})">Edit</button>
+            <button class="delete-btn" onclick="deleteExpense(${expense.id})">Delete</button>
+          </td>
+        `;
+                tbody.appendChild(row);
+            });
+        } catch (error) {
+            document.querySelector('.loading').textContent = "Error loading expenses.";
+            console.error(error);
+        }
+    }
+
+    async function deleteExpense(id) {
+        if (!confirm("Are you sure you want to delete this expense?")) return;
+        try {
+            const response = await fetch(`/expenses/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                showToast("Expense deleted!", "success");
+                loadExpenses();
+            } else {
+                showToast("Failed to delete expense.", "error");
+            }
+        } catch (error) {
+            console.error(error);
+            showToast("Error deleting expense.", "error");
+        }
+    }
+
+    function editExpense(id, name, amount) {
+        document.getElementById('expenseId').value = id;
+        document.getElementById('name').value = name;
+        document.getElementById('amount').value = amount;
+        document.getElementById('formTitle').textContent = "Edit Expense";
+    }
+
+    document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('expenseId').value;
+        const name = document.getElementById('name').value;
+        const amount = parseFloat(document.getElementById('amount').value);
+
+        try {
+            let response;
+            if (id) {
+                response = await fetch(`/expenses/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, name, amount })
+                });
+            } else {
+                response = await fetch('/expenses', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, amount })
+                });
+            }
+
+            if (response.ok) {
+                showToast("Expense saved successfully!", "success");
+                document.getElementById('expenseForm').reset();
+                document.getElementById('expenseId').value = "";
+                document.getElementById('formTitle').textContent = "Add New Expense";
+                loadExpenses();
+            } else {
+                showToast("Failed to save expense.", "error");
+            }
+        } catch (error) {
+            console.error(error);
+            showToast("Error saving expense.", "error");
+        }
+    });
+
+    loadExpenses();
+</script>
+</body>
+</html>

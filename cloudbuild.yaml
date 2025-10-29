@@ -1,33 +1,33 @@
 steps:
-  # Step 1: Build the JAR with Maven
-  - name: 'gcr.io/cloud-builders/mvn'
-    args: ['clean', 'package', '-DskipTests']
+  steps:
+    # Step 0: Build the JAR with Maven
+    - name: 'gcr.io/cloud-builders/maven'
+      args: ['clean', 'package', '-DskipTests']
 
-  # Step 2: Build the container image
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/expense-tracker', '.']
+    # Step 1: Build the container image
+    - name: 'gcr.io/cloud-builders/docker'
+      args: ['build', '-t', 'gcr.io/$PROJECT_ID/expense-tracker', '.']
 
-  # Step 3: Push to Artifact Registry
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/expense-tracker']
+    # Step 2: Push image to Artifact Registry (or Container Registry)
+    - name: 'gcr.io/cloud-builders/docker'
+      args: ['push', 'gcr.io/$PROJECT_ID/expense-tracker']
 
-  # Step 4: Deploy to Cloud Run with Secret Manager
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
-    args:
-      [
-        "run", "deploy", "expense-tracker",
-        "--image", "gcr.io/$PROJECT_ID/expense-tracker",
-        "--region", "us-east1",
-        "--platform", "managed",
-        "--allow-unauthenticated",
-        "--add-cloudsql-instances", "expense-tracker-ryan:us-east1:expense-db",
-        "--set-env-vars", "DB_USER=postgres,DB_NAME=expense_db,INSTANCE_CONNECTION_NAME=expense-tracker-ryan:us-east1:expense-db",
-        "--set-secrets", "DB_PASS=expense-db-pass:latest"
-      ]
+    # Step 3: Deploy to Cloud Run with DB secrets + env vars
+    - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+      entrypoint: gcloud
+      args:
+        [
+          'run', 'deploy', 'expense-tracker',
+          '--image', 'gcr.io/$PROJECT_ID/expense-tracker',
+          '--region', 'us-east1',
+          '--platform', 'managed',
+          '--allow-unauthenticated',
+          '--set-secrets', 'SPRING_DATASOURCE_PASSWORD=expense-db-pass:latest',
+          '--set-env-vars', 'SPRING_DATASOURCE_USERNAME=postgres,DB_NAME=expense_db,INSTANCE_CONNECTION_NAME=expense-tracker-ryan:us-east1:expense-db'
+        ]
 
 images:
-  - "gcr.io/$PROJECT_ID/expense-tracker"
+  - 'gcr.io/$PROJECT_ID/expense-tracker'
 
 options:
   logging: CLOUD_LOGGING_ONLY

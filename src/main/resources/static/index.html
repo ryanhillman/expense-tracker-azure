@@ -69,7 +69,6 @@
         .edit-btn { background: #f4b400; color: #fff; }
         .edit-btn:hover { background: #c49000; }
 
-        /* Toast styles */
         #toastContainer {
             position: fixed;
             top: 20px;
@@ -86,8 +85,8 @@
             font-weight: bold;
             animation: fadein 0.5s, fadeout 0.5s 3.5s;
         }
-        .toast.success { background: #4CAF50; } /* Green */
-        .toast.error { background: #e53935; }   /* Red */
+        .toast.success { background: #4CAF50; }
+        .toast.error { background: #e53935; }
         @keyframes fadein {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -101,7 +100,7 @@
 <body>
 <header>
     <h1>Ryan's Expense Tracker</h1>
-    <p>Track your expenses easily. Powered by Spring Boot + Google Cloud.</p>
+    <p>Powered by Spring Boot and Microsoft Azure.</p>
 </header>
 
 <!-- Expense List -->
@@ -111,9 +110,10 @@
     <table id="expensesTable" style="display:none;">
         <thead>
         <tr>
-            <th>ID</th>
+            <th>#</th> <!-- UI counter column -->
             <th>Name</th>
             <th>Amount ($)</th>
+            <th>Date Added</th> <!-- Column for date value -->
             <th>Actions</th>
         </tr>
         </thead>
@@ -133,24 +133,23 @@
 </div>
 
 <footer>
-    © 2025 Ryan Hillman — Built with Spring Boot on Google Cloud
+    © 2025 - Keep Building
 </footer>
 
-<!-- Toast Container -->
 <div id="toastContainer"></div>
 
 <script>
+    // Displays temporary toast messages
     function showToast(message, type = "success") {
         const container = document.getElementById("toastContainer");
         const toast = document.createElement("div");
         toast.className = `toast ${type}`;
         toast.textContent = message;
         container.appendChild(toast);
-        setTimeout(() => {
-            toast.remove();
-        }, 4000);
+        setTimeout(() => toast.remove(), 4000);
     }
 
+    // Fetches all expenses from the backend
     async function loadExpenses() {
         try {
             const response = await fetch('/expenses');
@@ -170,17 +169,24 @@
             loadingText.style.display = 'none';
             table.style.display = 'table';
 
-            expenses.forEach(expense => {
+            // Loops through expenses and populates table rows
+            expenses.forEach((expense, index) => {
+                // Formats date from backend or uses current date if missing
+                const dateAdded = expense.date
+                    ? new Date(expense.date).toLocaleDateString()
+                    : new Date().toLocaleDateString();
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
-          <td>${expense.id}</td>
-          <td>${expense.name}</td>
-          <td>${expense.amount.toFixed(2)}</td>
-          <td>
-            <button class="edit-btn" onclick="editExpense(${expense.id}, '${expense.name}', ${expense.amount})">Edit</button>
-            <button class="delete-btn" onclick="deleteExpense(${expense.id})">Delete</button>
-          </td>
-        `;
+                    <td>${index + 1}</td> <!-- Sequential row number -->
+                    <td>${expense.name}</td>
+                    <td>${expense.amount.toFixed(2)}</td>
+                    <td>${dateAdded}</td> <!-- Displays formatted date -->
+                    <td>
+                        <button class="edit-btn" onclick="editExpense(${expense.id}, '${expense.name}', ${expense.amount})">Edit</button>
+                        <button class="delete-btn" onclick="deleteExpense(${expense.id})">Delete</button>
+                    </td>
+                `;
                 tbody.appendChild(row);
             });
         } catch (error) {
@@ -189,6 +195,7 @@
         }
     }
 
+    // Deletes an expense by ID
     async function deleteExpense(id) {
         if (!confirm("Are you sure you want to delete this expense?")) return;
         try {
@@ -205,6 +212,7 @@
         }
     }
 
+    // Loads expense data into form for editing
     function editExpense(id, name, amount) {
         document.getElementById('expenseId').value = id;
         document.getElementById('name').value = name;
@@ -212,6 +220,7 @@
         document.getElementById('formTitle').textContent = "Edit Expense";
     }
 
+    // Handles form submission for adding or editing
     document.getElementById('expenseForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('expenseId').value;
@@ -249,6 +258,7 @@
         }
     });
 
+    // Loads all expenses when the page is opened
     loadExpenses();
 </script>
 </body>

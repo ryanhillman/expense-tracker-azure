@@ -11,5 +11,4 @@ target/
 # Cloud/host configs
 *.publishsettings
 *.publishprofile
-.gcloudignore
 .dockerignore

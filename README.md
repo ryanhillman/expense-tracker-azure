@@ -1,5 +1,8 @@
-![Azure](https://img.shields.io/badge/Built%20With-Microsoft%20Azure-0078D4?logo=microsoft-azure&logoColor=white)
-![Cloud App](https://img.shields.io/badge/Type-Cloud%20Application-blue)
+<p align="center">
+  <img src="https://img.shields.io/badge/Built%20With-Microsoft%20Azure-0078D4?logo=microsoft-azure&logoColor=white" />
+  <img src="https://img.shields.io/badge/Backend-REST%20API-green" />
+  <img src="https://img.shields.io/badge/Database-SQL-orange" />
+</p>
 
 # Expense Tracker (Azure Deployment)
 

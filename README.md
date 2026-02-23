@@ -1,7 +1,7 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Built%20With-Microsoft%20Azure-0078D4?logo=microsoft-azure&logoColor=white" />
-  <img src="https://img.shields.io/badge/Backend-REST%20API-green" />
-  <img src="https://img.shields.io/badge/Database-SQL-orange" />
+  <img src="https://img.shields.io/badge/Cloud-Microsoft%20Azure-0078D4?logo=microsoft-azure&logoColor=white" />
+  <img src="https://img.shields.io/badge/Backend-Spring%20Boot-6DB33F?logo=springboot&logoColor=white" />
+  <img src="https://img.shields.io/badge/Database-PostgreSQL-4169E1?logo=postgresql&logoColor=white" />
 </p>
 
 # Expense Tracker (Azure Deployment)

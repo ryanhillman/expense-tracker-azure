@@ -1,10 +1,10 @@
+# Expense Tracker (Azure Deployment)
+
 <p align="center">
   <img src="https://img.shields.io/badge/Cloud-Microsoft%20Azure-0078D4?logo=microsoft-azure&logoColor=white" />
   <img src="https://img.shields.io/badge/Backend-Spring%20Boot-6DB33F?logo=springboot&logoColor=white" />
   <img src="https://img.shields.io/badge/Database-PostgreSQL-4169E1?logo=postgresql&logoColor=white" />
 </p>
-
-# Expense Tracker (Azure Deployment)
 
 Welcome to my cloud-deployed expense tracking project!  
 This application demonstrates how I’ve used **Spring Boot**, **PostgreSQL**, and **Microsoft Azure App Service** to create a full-stack web application that tracks personal expenses with live database updates and a clean, responsive interface.
